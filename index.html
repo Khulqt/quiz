@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram View Bot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        input, button {
+            margin-bottom: 10px;
+            padding: 10px;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .log {
+            margin-top: 20px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Telegram View Bot</h1>
+    <input type="text" id="link1" placeholder="Post link1">
+    <input type="text" id="link2" placeholder="Post link2">
+    <input type="text" id="link3" placeholder="Post link3">
+    <input type="text" id="link4" placeholder="Post link4">
+    <input type="text" id="link5" placeholder="Post link5">
+    <input type="text" id="link6" placeholder="Post link6">
+    <button id="startButton">Start</button>
+    <div class="log" id="log"></div>
+
+    <script>
+        document.getElementById('startButton').addEventListener('click', start);
+
+        function logMessage(message) {
+            const log = document.getElementById('log');
+            const newMessage = document.createElement('div');
+            newMessage.textContent = message;
+            log.appendChild(newMessage);
+        }
+
+        async function sendSeen(channel, msgid, proxy) {
+            try {
+                const response = await fetch(`https://t.me/${channel}/${msgid}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': '*/*',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                        'Connection': 'keep-alive',
+                        'User-Agent': 'Mozilla/5.0',
+                        'Proxy': proxy
+                    },
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+
+                const cookie = response.headers.get('set-cookie').split(';')[0];
+                const h1 = {
+                    "Accept": "*/*",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Connection": "keep-alive",
+                    "Content-Length": "5",
+                    "Content-type": "application/x-www-form-urlencoded",
+                    "Cookie": cookie,
+                    "Host": "t.me",
+                    "Origin": "https://t.me",
+                    "Referer": `https://t.me/${channel}/${msgid}?embed=1`,
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-origin",
+                    "User-Agent": "Mozilla/5.0"
+                };
+
+                const d1 = { "_rl": "1" };
+                const postResponse = await fetch(`https://t.me/${channel}/${msgid}?embed=1`, {
+                    method: 'POST',
+                    headers: h1,
+                    body: JSON.stringify(d1),
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+
+                const text = await postResponse.text();
+                const key = text.split('data-view="')[1].split('"')[0];
+                const nowView = text.split('<span class="tgme_widget_message_views">')[1].split('</span>')[0].replace("K", "00").replace(".", "");
+
+                const h2 = {
+                    "Accept": "*/*",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Connection": "keep-alive",
+                    "Cookie": cookie,
+                    "Host": "t.me",
+                    "Referer": `https://t.me/${channel}/${msgid}?embed=1`,
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-origin",
+                    "User-Agent": "Mozilla/5.0",
+                    "X-Requested-With": "XMLHttpRequest"
+                };
+
+                const viewResponse = await fetch(`https://t.me/v/?views=${key}`, {
+                    method: 'GET',
+                    headers: h2,
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+
+                if (viewResponse.text() === "true") {
+                    logMessage(`Done Add View: ${nowView}`);
+                }
+            } catch (e) {
+                logMessage(`Error: ${e}`);
+            }
+        }
+
+        async function view2(proxy) {
+            const links = [
+                document.getElementById('link1').value,
+                document.getElementById('link2').value,
+                document.getElementById('link3').value,
+                document.getElementById('link4').value,
+                document.getElementById('link5').value,
+                document.getElementById('link6').value
+            ];
+
+            for (let i of links) {
+                if (i) {
+                    const channel = i.split('/')[3];
+                    const msgid = i.split('/')[4];
+                    await sendSeen(channel, msgid, proxy);
+                }
+            }
+        }
+
+        async function start() {
+            const proxyList = [
+                "104.223.135.178:3128",
+                "206.62.64.34:8080",
+                "185.230.223.207:8080",
+                "103.156.140.239:8080",
+                "103.156.140.239:3128",
+                "212.237.21.238:8080",
+                "190.7.138.78:8080",
+                "179.108.220.184:8080",
+                "110.44.117.26:43922",
+                "191.96.42.80:8080",
+                "217.79.181.109:443",
+                "134.209.29.120:3128",
+                "159.89.132.108:8989",
+                "178.128.246.94:443",
+                "161.97.71.47:8080",
+                "185.75.5.158:8080",
+                "206.189.158.178:443",
+                "159.203.44.177:3128",
+                "137.74.57.164:3128",
+                "191.96.42.80:443",
+                "192.111.139.163:19404",
+                "192.111.139.165:19400",
+                "192.111.139.165:19404",
+                "72.217.216.239:4145",
+                "72.195.34.58:4145",
+                "81.21.82.116:1080",
+                "162.144.103.99:2654",
+                "110.77.149.50:5678",
+                "87.126.141.10:4145",
+                "192.111.130.2:4145"
+            ];
+
+            for (let proxy of proxyList) {
+                await view2(proxy);
+            }
+        }
+    </script>
+</body>
+</html>
