@@ -3,261 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz</title>
+    <title>نظام إدارة الاختبارات</title>
     <style>
-        /* General Styles */
         body {
-            font-family: Arial, sans-serif;
-            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8f9fa;
             margin: 0;
             padding: 0;
+            direction: rtl;
+            text-align: right;
         }
 
-        /* Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #f1f1f1;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .header-title {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .header-controls {
-            display: flex;
-            align-items: center;
-        }
-
-        .icon {
-            width: 24px;
-            height: 24px;
-            margin-left: 20px;
-            cursor: pointer;
-            position: relative;
-        }
-
-        #notification-dot {
-            display: none;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: red;
-            position: absolute;
-            top: 0;
-            right: 0;
-        }
-
-        /* Admin Container */
-        #admin-container {
-            display: none;
-            padding: 20px;
-        }
-
-        #admin-main {
-            margin-top: 20px;
-        }
-
-        /* Main Container */
         #main-container {
+            width: 80%;
+            margin: 0 auto;
             padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
         }
 
-        #quizzes-container {
-            margin-top: 20px;
+        header {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .quiz {
-            border: 1px solid #ddd;
+        h1, h2 {
+            color: #343a40;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input, button {
+            width: 100%;
             padding: 10px;
-            margin-bottom: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
             border-radius: 5px;
-        }
-
-        .question {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
+            border: 1px solid #ced4da;
+            box-sizing: border-box;
         }
 
         button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
             background-color: #007bff;
             color: white;
             cursor: pointer;
-            margin: 5px;
+            border: none;
+            font-size: 16px;
         }
 
         button:hover {
             background-color: #0056b3;
         }
 
-        /* Dark Mode */
-        body.dark-mode {
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-
-        header.dark-mode {
-            background-color: #1e1e1e;
-            border-bottom: 1px solid #333;
-        }
-
-        button.dark-mode {
-            background-color: #007bff;
-            color: #e0e0e0;
-        }
-
-        #notifications-list {
+        .hidden {
             display: none;
-            position: absolute;
-            top: 50px;
-            right: 20px;
-            background: #fff;
-            border: 1px solid #ddd;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            padding: 10px;
-            width: 200px;
-            z-index: 1000;
         }
 
-        #notifications-list ul {
-            list-style-type: none;
-            padding: 0;
+        #questions-container .question {
+            margin-bottom: 15px;
         }
 
-        #notifications-list li {
-            padding: 5px 0;
+        #questions-container .answers label {
+            display: block;
+            margin-bottom: 5px;
         }
 
+        #results-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #admin-section {
+            background-color: #f1f3f5;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.05);
+        }
     </style>
 </head>
 <body>
-    <div id="admin-container">
-        <header>
-            <div class="header-title">Quiz</div>
-            <div class="header-controls">
-                <div id="notifications-icon" class="icon">
-                    <span id="notification-dot"></span>
-                    🔔
-                </div>
-                <div id="dark-mode-icon" class="icon">
-                    🌙
-                </div>
-            </div>
-        </header>
-        <main id="admin-main">
-            <h1>إدارة الاختبارات</h1>
-            <input type="text" id="quiz-title-input" placeholder="عنوان الاختبار">
-            <button onclick="publishQuiz()">نشر الاختبار</button>
-            <div id="admin-quiz-controls">
-                <h2>إضافة سؤال</h2>
-                <input type="text" id="question-input" placeholder="أدخل السؤال">
-                <input type="text" id="answers-input" placeholder="أدخل الإجابات (مفصولة بفواصل)">
-                <input type="number" id="correct-answer-input" placeholder="رقم الإجابة الصحيحة">
-                <button onclick="addQuestion()">إضافة سؤال</button>
-            </div>
-        </main>
-        <div id="notifications-list">
-            <ul id="notifications-content"></ul>
-        </div>
-    </div>
     <div id="main-container">
         <header>
-            <div class="header-title">Quiz</div>
-            <div class="header-controls">
-                <div id="notifications-icon" class="icon">
-                    <span id="notification-dot"></span>
-                    🔔
-                </div>
-                <div id="dark-mode-icon" class="icon">
-                    🌙
-                </div>
-            </div>
+            <h1>نظام إدارة الاختبارات</h1>
         </header>
-        <main>
-            <h1 id="quiz-title"></h1>
-            <div id="quizzes-container"></div>
-            <div id="results-container" style="display: none;">
-                <h2>نتيجتك</h2>
-                <p id="score"></p>
-            </div>
-        </main>
+        
+        <div id="quiz-section" class="hidden">
+            <h2 id="quiz-title">اختبار</h2>
+            <div id="questions-container"></div>
+            <button id="submit-quiz" onclick="submitQuiz()">إرسال الإجابات</button>
+        </div>
+        
+        <div id="results-container" class="hidden">
+            <h2>نتيجتك:</h2>
+            <p id="score"></p>
+        </div>
+        
+        <div id="admin-section" class="hidden">
+            <h2>إدارة الاختبار</h2>
+            <form id="quiz-form">
+                <label for="quiz-title-input">عنوان الاختبار:</label>
+                <input type="text" id="quiz-title-input" required>
+
+                <label for="question-input">السؤال:</label>
+                <input type="text" id="question-input" required>
+
+                <label for="answers-input">الإجابات (مفصولة بفواصل):</label>
+                <input type="text" id="answers-input" required>
+
+                <label for="correct-answer-input">رقم الإجابة الصحيحة:</label>
+                <input type="number" id="correct-answer-input" required>
+
+                <button type="button" onclick="addQuestion()">إضافة السؤال</button>
+                <button type="button" onclick="publishQuiz()">نشر الاختبار</button>
+            </form>
+        </div>
     </div>
+
     <script>
-        const developerIP = '197.43.41.199';
-        const notifications = [];
-        let quizData = { questions: [] };
+        const quizData = {
+            title: "",
+            questions: []
+        };
 
-        function loadQuizzes() {
-            // Example quizzes data (should be fetched from server)
-            const quizzes = [
-                {
-                    title: 'اختبار 1',
-                    questions: [
-                        { question: 'ما هو لون السماء؟', answers: ['أزرق', 'أحمر', 'أخضر'], correctAnswer: 0 }
-                    ]
-                },
-                {
-                    title: 'اختبار 2',
-                    questions: [
-                        { question: 'ما هو أكبر كوكب في النظام الشمسي؟', answers: ['الأرض', 'المريخ', 'المشتري'], correctAnswer: 2 }
-                    ]
-                }
-            ];
+        const developerIP = "197.43.41.199";  // IP الخاص بالمطور
 
-            const container = document.getElementById('quizzes-container');
-            container.innerHTML = '';
-
-            quizzes.forEach((quiz, index) => {
-                const quizElement = document.createElement('div');
-                quizElement.className = 'quiz';
-
-                const title = document.createElement('h2');
-                title.textContent = quiz.title;
-                quizElement.appendChild(title);
-
-                quiz.questions.forEach((question, qIndex) => {
-                    const questionElement = document.createElement('div');
-                    questionElement.className = 'question';
-
-                    const questionText = document.createElement('p');
-                    questionText.textContent = question.question;
-                    questionElement.appendChild(questionText);
-
-                    question.answers.forEach((answer, aIndex) => {
-                        const answerElement = document.createElement('button');
-                        answerElement.textContent = answer;
-                        answerElement.onclick = () => submitAnswer(index, qIndex, aIndex);
-                        questionElement.appendChild(answerElement);
-                    });
-
-                    quizElement.appendChild(questionElement);
-                });
-
-                container.appendChild(quizElement);
-            });
+        function checkDeveloperAccess() {
+            fetch('https://api64.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ip === developerIP) {
+                        document.getElementById('admin-section').classList.remove('hidden');
+                    } else {
+                        document.getElementById('quiz-section').classList.remove('hidden');
+                    }
+                })
+                .catch(error => console.error('Error fetching IP:', error));
         }
 
-        function submitAnswer(quizIndex, questionIndex, answerIndex) {
-            // Assuming quizData is correctly set
-            const quiz = quizData;
-            const correctAnswer = quiz.questions[questionIndex].correctAnswer;
+        function loadQuiz() {
+            const titleElement = document.getElementById('quiz-title');
+            const questionsContainer = document.getElementById('questions-container');
 
-            const feedback = answerIndex === correctAnswer ? '✅ إجابة صحيحة' : '❌ إجابة خاطئة';
-            alert(feedback);
+            titleElement.textContent = quizData.title;
+            questionsContainer.innerHTML = '';
 
-            // Hide the questions and show the results
-            document.getElementById('quizzes-container').style.display = 'none';
-            document.getElementById('results-container').style.display = 'block';
-            document.getElementById('score').textContent = `أجبت بشكل صحيح على ${answerIndex === correctAnswer ? 1 : 0}/${quiz.questions.length} أسئلة`;
+            quizData.questions.forEach((q, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('question');
+                
+                const questionText = document.createElement('h3');
+                questionText.textContent = q.question;
+                questionElement.appendChild(questionText);
+                
+                const answersContainer = document.createElement('div');
+                answersContainer.classList.add('answers');
+
+                q.answers.forEach((answer, i) => {
+                    const label = document.createElement('label');
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = `question_${index}`;
+                    input.value = i;
+
+                    label.appendChild(input);
+                    label.append(answer);
+                    answersContainer.appendChild(label);
+                });
+
+                questionElement.appendChild(answersContainer);
+                questionsContainer.appendChild(questionElement);
+            });
         }
 
         function addQuestion() {
@@ -279,153 +199,26 @@
 
         function publishQuiz() {
             quizData.title = document.getElementById('quiz-title-input').value;
+            loadQuiz();
+            document.getElementById('quiz-section').classList.remove('hidden');
             alert('تم نشر الاختبار بنجاح');
-            loadQuizzes();
-
-            // Sending notification
-            addNotification("تم نشر اختبار جديد: " + quizData.title);
         }
 
-        function addNotification(message) {
-            const notification = {
-                id: notifications.length + 1,
-                message: message,
-                read: false
-            };
-            notifications.push(notification);
-            updateNotificationIcon();
-            renderNotifications();
-        }
+        function submitQuiz() {
+            let score = 0;
 
-        function updateNotificationIcon() {
-            const unreadCount = notifications.filter(n => !n.read).length;
-            const notificationDot = document.getElementById('notification-dot');
-            notificationDot.style.display = unreadCount > 0 ? 'block' : 'none';
-        }
-
-        function renderNotifications() {
-            const notificationsContent = document.getElementById('notifications-content');
-            notificationsContent.innerHTML = '';
-
-            notifications.forEach(notification => {
-                const listItem = document.createElement('li');
-                listItem.textContent = notification.message;
-                listItem.onclick = () => {
-                    // Handle notification click to show quiz
-                    const quizTitle = notification.message.split(": ")[1];
-                    showQuizByTitle(quizTitle);
-                };
-                notificationsContent.appendChild(listItem);
-            });
-        }
-
-        function toggleNotifications() {
-            const notificationsList = document.getElementById('notifications-list');
-            const isVisible = notificationsList.style.display === 'block';
-            notificationsList.style.display = isVisible ? 'none' : 'block';
-
-            if (!isVisible) {
-                markNotificationsAsRead();
-            }
-        }
-
-        function markNotificationsAsRead() {
-            notifications.forEach(notification => {
-                notification.read = true;
-            });
-            updateNotificationIcon();
-        }
-
-        function showQuizByTitle(title) {
-            // Load quiz data based on title (mock example, should be fetched from server)
-            const quizzes = [
-                {
-                    title: 'اختبار 1',
-                    questions: [
-                        { question: 'ما هو لون السماء؟', answers: ['أزرق', 'أحمر', 'أخضر'], correctAnswer: 0 }
-                    ]
-                },
-                {
-                    title: 'اختبار 2',
-                    questions: [
-                        { question: 'ما هو أكبر كوكب في النظام الشمسي؟', answers: ['الأرض', 'المريخ', 'المشتري'], correctAnswer: 2 }
-                    ]
+            quizData.questions.forEach((q, index) => {
+                const selectedAnswer = document.querySelector(`input[name="question_${index}"]:checked`);
+                if (selectedAnswer && parseInt(selectedAnswer.value) === q.correctAnswer) {
+                    score++;
                 }
-            ];
-
-            const quiz = quizzes.find(q => q.title === title);
-            quizData = quiz || { questions: [] };
-            document.getElementById('quiz-title').textContent = quizData.title || 'لا توجد اختبارات';
-            renderQuestions();
-        }
-
-        function renderQuestions() {
-            const container = document.getElementById('quizzes-container');
-            container.innerHTML = '';
-
-            quizData.questions.forEach((question, index) => {
-                const questionElement = document.createElement('div');
-                questionElement.className = 'question';
-
-                const questionText = document.createElement('p');
-                questionText.textContent = question.question;
-                questionElement.appendChild(questionText);
-
-                question.answers.forEach((answer, aIndex) => {
-                    const answerElement = document.createElement('button');
-                    answerElement.textContent = answer;
-                    answerElement.onclick = () => submitAnswer(index, aIndex);
-                    questionElement.appendChild(answerElement);
-                });
-
-                container.appendChild(questionElement);
             });
 
-            document.getElementById('quizzes-container').style.display = 'block';
-            document.getElementById('results-container').style.display = 'none';
+            document.getElementById('score').textContent = `${score} من ${quizData.questions.length}`;
+            document.getElementById('results-container').classList.remove('hidden');
         }
 
-        function submitAnswer(questionIndex, answerIndex) {
-            const correctAnswer = quizData.questions[questionIndex].correctAnswer;
-
-            if (answerIndex === correctAnswer) {
-                alert('✅ إجابة صحيحة');
-            } else {
-                alert('❌ إجابة خاطئة');
-            }
-
-            // Hide the questions and show the results
-            document.getElementById('quizzes-container').style.display = 'none';
-            document.getElementById('results-container').style.display = 'block';
-            document.getElementById('score').textContent = `أجبت بشكل صحيح على ${answerIndex === correctAnswer ? 1 : 0}/${quizData.questions.length} أسئلة`;
-        }
-
-        function checkIP() {
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.ip === developerIP) {
-                        document.getElementById('admin-container').style.display = 'block';
-                        document.getElementById('main-container').style.display = 'none';
-                    } else {
-                        document.getElementById('admin-container').style.display = 'none';
-                        document.getElementById('main-container').style.display = 'block';
-                        loadQuizzes();
-                    }
-                })
-                .catch(error => console.error('Error fetching IP:', error));
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            document.querySelectorAll('header').forEach(el => el.classList.toggle('dark-mode'));
-        }
-
-        window.onload = function() {
-            checkIP();
-            document.getElementById('notifications-icon').onclick = toggleNotifications;
-            document.getElementById('dark-mode-icon').onclick = toggleDarkMode;
-        };
+        window.onload = checkDeveloperAccess;
     </script>
 </body>
 </html>
