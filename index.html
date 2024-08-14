@@ -92,6 +92,7 @@
             background-color: #007bff;
             color: white;
             cursor: pointer;
+            margin: 5px;
         }
 
         button:hover {
@@ -134,7 +135,6 @@
 
         #notifications-list li {
             padding: 5px 0;
-            cursor: pointer;
         }
 
     </style>
@@ -183,65 +183,81 @@
             </div>
         </header>
         <main>
-            <h1>الاختبارات</h1>
+            <h1 id="quiz-title"></h1>
             <div id="quizzes-container"></div>
+            <div id="results-container" style="display: none;">
+                <h2>نتيجتك</h2>
+                <p id="score"></p>
+            </div>
         </main>
     </div>
     <script>
         const developerIP = '197.43.41.199';
         const notifications = [];
-        const quizzes = []; // Store quizzes data
+        let quizData = { questions: [] };
 
         function loadQuizzes() {
-            // Load quizzes data (this should be replaced with real data fetching logic)
-            const quizzesContainer = document.getElementById('quizzes-container');
-            quizzesContainer.innerHTML = '';
+            // Example quizzes data (should be fetched from server)
+            const quizzes = [
+                {
+                    title: 'اختبار 1',
+                    questions: [
+                        { question: 'ما هو لون السماء؟', answers: ['أزرق', 'أحمر', 'أخضر'], correctAnswer: 0 }
+                    ]
+                },
+                {
+                    title: 'اختبار 2',
+                    questions: [
+                        { question: 'ما هو أكبر كوكب في النظام الشمسي؟', answers: ['الأرض', 'المريخ', 'المشتري'], correctAnswer: 2 }
+                    ]
+                }
+            ];
 
-            quizzes.forEach(quiz => {
-                const quizDiv = document.createElement('div');
-                quizDiv.classList.add('quiz');
-                quizDiv.innerHTML = `<h2>${quiz.title}</h2>`;
-                quiz.questions.forEach((question, index) => {
-                    quizDiv.innerHTML += `
-                        <div class="question">
-                            <p>${question.question}</p>
-                            ${question.answers.map((answer, i) => `
-                                <label>
-                                    <input type="radio" name="question-${index}" value="${i}">
-                                    ${answer}
-                                </label>
-                            `).join('<br>')}
-                        </div>
-                    `;
+            const container = document.getElementById('quizzes-container');
+            container.innerHTML = '';
+
+            quizzes.forEach((quiz, index) => {
+                const quizElement = document.createElement('div');
+                quizElement.className = 'quiz';
+
+                const title = document.createElement('h2');
+                title.textContent = quiz.title;
+                quizElement.appendChild(title);
+
+                quiz.questions.forEach((question, qIndex) => {
+                    const questionElement = document.createElement('div');
+                    questionElement.className = 'question';
+
+                    const questionText = document.createElement('p');
+                    questionText.textContent = question.question;
+                    questionElement.appendChild(questionText);
+
+                    question.answers.forEach((answer, aIndex) => {
+                        const answerElement = document.createElement('button');
+                        answerElement.textContent = answer;
+                        answerElement.onclick = () => submitAnswer(index, qIndex, aIndex);
+                        questionElement.appendChild(answerElement);
+                    });
+
+                    quizElement.appendChild(questionElement);
                 });
-                quizDiv.innerHTML += '<button onclick="submitAnswers()">إرسال الإجابات</button>';
-                quizzesContainer.appendChild(quizDiv);
+
+                container.appendChild(quizElement);
             });
         }
 
-        function submitAnswers() {
-            const answers = [];
-            document.querySelectorAll('[name^="question-"]').forEach(input => {
-                if (input.checked) {
-                    answers.push(input.value);
-                }
-            });
+        function submitAnswer(quizIndex, questionIndex, answerIndex) {
+            // Assuming quizData is correctly set
+            const quiz = quizData;
+            const correctAnswer = quiz.questions[questionIndex].correctAnswer;
 
-            const quizTitle = document.getElementById('quiz-title').textContent;
-            const quiz = quizzes.find(q => q.title === quizTitle);
+            const feedback = answerIndex === correctAnswer ? '✅ إجابة صحيحة' : '❌ إجابة خاطئة';
+            alert(feedback);
 
-            if (quiz) {
-                const score = answers.reduce((total, answer, index) => {
-                    if (answer == quiz.questions[index].correctAnswer) {
-                        total++;
-                    }
-                    return total;
-                }, 0);
-
-                document.getElementById('quizzes-container').style.display = 'none';
-                document.getElementById('results-container').style.display = 'block';
-                document.getElementById('score').textContent = `${score} من ${quiz.questions.length}`;
-            }
+            // Hide the questions and show the results
+            document.getElementById('quizzes-container').style.display = 'none';
+            document.getElementById('results-container').style.display = 'block';
+            document.getElementById('score').textContent = `أجبت بشكل صحيح على ${answerIndex === correctAnswer ? 1 : 0}/${quiz.questions.length} أسئلة`;
         }
 
         function addQuestion() {
@@ -249,13 +265,11 @@
             const answers = document.getElementById('answers-input').value.split(',');
             const correctAnswer = parseInt(document.getElementById('correct-answer-input').value) - 1;
 
-            if (quizData.questions) {
-                quizData.questions.push({
-                    question: question,
-                    answers: answers,
-                    correctAnswer: correctAnswer
-                });
-            }
+            quizData.questions.push({
+                question: question,
+                answers: answers,
+                correctAnswer: correctAnswer
+            });
 
             alert('تم إضافة السؤال بنجاح');
             document.getElementById('question-input').value = '';
@@ -264,20 +278,12 @@
         }
 
         function publishQuiz() {
-            const title = document.getElementById('quiz-title-input').value;
-
-            quizzes.push({
-                title: title,
-                questions: quizData.questions
-            });
-
-            quizData.questions = [];
-            document.getElementById('quiz-title-input').value = '';
+            quizData.title = document.getElementById('quiz-title-input').value;
             alert('تم نشر الاختبار بنجاح');
             loadQuizzes();
 
-            // إرسال إشعار عند نشر اختبار جديد
-            addNotification("تم نشر اختبار جديد: " + title);
+            // Sending notification
+            addNotification("تم نشر اختبار جديد: " + quizData.title);
         }
 
         function addNotification(message) {
@@ -304,61 +310,122 @@
             notifications.forEach(notification => {
                 const listItem = document.createElement('li');
                 listItem.textContent = notification.message;
-                listItem.onclick = function() {
-                    // عرض تفاصيل الاختبار المرتبط بالإشعار
-                    const quizTitle = notification.message.replace('تم نشر اختبار جديد: ', '');
-                    const quiz = quizzes.find(q => q.title === quizTitle);
-                    if (quiz) {
-                        document.getElementById('quizzes-container').innerHTML = `
-                            <h2>${quiz.title}</h2>
-                            ${quiz.questions.map((question, index) => `
-                                <div class="question">
-                                    <p>${question.question}</p>
-                                    ${question.answers.map((answer, i) => `
-                                        <label>
-                                            <input type="radio" name="question-${index}" value="${i}">
-                                            ${answer}
-                                        </label>
-                                    `).join('<br>')}
-                                </div>
-                            `).join('')}
-                            <button onclick="submitAnswers()">إرسال الإجابات</button>
-                        `;
-                        document.getElementById('quizzes-container').style.display = 'block';
-                        document.getElementById('results-container').style.display = 'none';
-                    }
+                listItem.onclick = () => {
+                    // Handle notification click to show quiz
+                    const quizTitle = notification.message.split(": ")[1];
+                    showQuizByTitle(quizTitle);
                 };
                 notificationsContent.appendChild(listItem);
             });
         }
 
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            document.querySelectorAll('header').forEach(header => header.classList.toggle('dark-mode'));
-        }
+        function toggleNotifications() {
+            const notificationsList = document.getElementById('notifications-list');
+            const isVisible = notificationsList.style.display === 'block';
+            notificationsList.style.display = isVisible ? 'none' : 'block';
 
-        function checkIP() {
-            // Replace with actual logic to get the current IP
-            const currentIP = '197.43.41.199'; // Placeholder for the current IP
-
-            if (currentIP === developerIP) {
-                document.getElementById('admin-container').style.display = 'block';
-                document.getElementById('main-container').style.display = 'none';
-            } else {
-                document.getElementById('admin-container').style.display = 'none';
-                document.getElementById('main-container').style.display = 'block';
-                loadQuizzes();
+            if (!isVisible) {
+                markNotificationsAsRead();
             }
         }
 
-        document.getElementById('dark-mode-icon').addEventListener('click', toggleDarkMode);
-        document.getElementById('notifications-icon').addEventListener('click', function() {
-            const notificationsList = document.getElementById('notifications-list');
-            notificationsList.style.display = notificationsList.style.display === 'block' ? 'none' : 'block';
-        });
+        function markNotificationsAsRead() {
+            notifications.forEach(notification => {
+                notification.read = true;
+            });
+            updateNotificationIcon();
+        }
 
-        // Initial check
-        checkIP();
+        function showQuizByTitle(title) {
+            // Load quiz data based on title (mock example, should be fetched from server)
+            const quizzes = [
+                {
+                    title: 'اختبار 1',
+                    questions: [
+                        { question: 'ما هو لون السماء؟', answers: ['أزرق', 'أحمر', 'أخضر'], correctAnswer: 0 }
+                    ]
+                },
+                {
+                    title: 'اختبار 2',
+                    questions: [
+                        { question: 'ما هو أكبر كوكب في النظام الشمسي؟', answers: ['الأرض', 'المريخ', 'المشتري'], correctAnswer: 2 }
+                    ]
+                }
+            ];
+
+            const quiz = quizzes.find(q => q.title === title);
+            quizData = quiz || { questions: [] };
+            document.getElementById('quiz-title').textContent = quizData.title || 'لا توجد اختبارات';
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('quizzes-container');
+            container.innerHTML = '';
+
+            quizData.questions.forEach((question, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question';
+
+                const questionText = document.createElement('p');
+                questionText.textContent = question.question;
+                questionElement.appendChild(questionText);
+
+                question.answers.forEach((answer, aIndex) => {
+                    const answerElement = document.createElement('button');
+                    answerElement.textContent = answer;
+                    answerElement.onclick = () => submitAnswer(index, aIndex);
+                    questionElement.appendChild(answerElement);
+                });
+
+                container.appendChild(questionElement);
+            });
+
+            document.getElementById('quizzes-container').style.display = 'block';
+            document.getElementById('results-container').style.display = 'none';
+        }
+
+        function submitAnswer(questionIndex, answerIndex) {
+            const correctAnswer = quizData.questions[questionIndex].correctAnswer;
+
+            if (answerIndex === correctAnswer) {
+                alert('✅ إجابة صحيحة');
+            } else {
+                alert('❌ إجابة خاطئة');
+            }
+
+            // Hide the questions and show the results
+            document.getElementById('quizzes-container').style.display = 'none';
+            document.getElementById('results-container').style.display = 'block';
+            document.getElementById('score').textContent = `أجبت بشكل صحيح على ${answerIndex === correctAnswer ? 1 : 0}/${quizData.questions.length} أسئلة`;
+        }
+
+        function checkIP() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ip === developerIP) {
+                        document.getElementById('admin-container').style.display = 'block';
+                        document.getElementById('main-container').style.display = 'none';
+                    } else {
+                        document.getElementById('admin-container').style.display = 'none';
+                        document.getElementById('main-container').style.display = 'block';
+                        loadQuizzes();
+                    }
+                })
+                .catch(error => console.error('Error fetching IP:', error));
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            document.querySelectorAll('header').forEach(el => el.classList.toggle('dark-mode'));
+        }
+
+        window.onload = function() {
+            checkIP();
+            document.getElementById('notifications-icon').onclick = toggleNotifications;
+            document.getElementById('dark-mode-icon').onclick = toggleDarkMode;
+        };
     </script>
 </body>
 </html>
