@@ -1,141 +1,341 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Bot</title>
+    <title>Quiz</title>
     <style>
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header */
+        header {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            height: 100vh;
+            padding: 10px 20px;
+            background-color: #f1f1f1;
+            border-bottom: 1px solid #ddd;
         }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
         }
-        .form-group {
-            margin-bottom: 15px;
+
+        .header-controls {
+            display: flex;
+            align-items: center;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .form-group input[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin-left: 20px;
             cursor: pointer;
-            font-size: 16px;
+            position: relative;
         }
-        .form-group input[type="submit"]:hover {
-            background-color: #45a049;
-        }
-        .progress-bar {
-            width: 100%;
-            background-color: #f3f3f3;
-            border-radius: 8px;
-            overflow: hidden;
+
+        #notification-dot {
             display: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: red;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        /* Admin Container */
+        #admin-container {
+            display: none;
+            padding: 20px;
+        }
+
+        #admin-main {
             margin-top: 20px;
         }
-        .progress-bar div {
-            height: 24px;
-            width: 0;
-            background-color: #4CAF50;
-            text-align: center;
-            line-height: 24px;
+
+        /* Main Container */
+        #main-container {
+            padding: 20px;
+        }
+
+        #questions-container {
+            margin-top: 20px;
+        }
+
+        .question {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
             color: white;
-            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        header.dark-mode {
+            background-color: #1e1e1e;
+            border-bottom: 1px solid #333;
+        }
+
+        button.dark-mode {
+            background-color: #007bff;
+            color: #e0e0e0;
+        }
+
+        #notifications-list {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            padding: 10px;
+            width: 200px;
+            z-index: 1000;
+        }
+
+        #notifications-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #notifications-list li {
+            padding: 5px 0;
+            cursor: pointer;
+        }
+
+        #notifications-list li:hover {
+            background-color: #f1f1f1;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <form id="viewForm">
-            <div class="form-group">
-                <label for="link1">Post link 1:</label>
-                <input type="text" id="link1" name="link1" required>
+    <div id="admin-container">
+        <header>
+            <div class="header-title">Quiz</div>
+            <div class="header-controls">
+                <div id="notifications-icon" class="icon">
+                    <span id="notification-dot"></span>
+                    🔔
+                </div>
+                <div id="dark-mode-icon" class="icon">
+                    🌙
+                </div>
             </div>
-            <div class="form-group">
-                <label for="link2">Post link 2:</label>
-                <input type="text" id="link2" name="link2" required>
+        </header>
+        <main id="admin-main">
+            <h1>إدارة الاختبارات</h1>
+            <input type="text" id="quiz-title-input" placeholder="عنوان الاختبار">
+            <button onclick="publishQuiz()">نشر الاختبار</button>
+            <div id="admin-quiz-controls">
+                <h2>إضافة سؤال</h2>
+                <input type="text" id="question-input" placeholder="أدخل السؤال">
+                <input type="text" id="answers-input" placeholder="أدخل الإجابات (مفصولة بفواصل)">
+                <input type="number" id="correct-answer-input" placeholder="رقم الإجابة الصحيحة">
+                <button onclick="addQuestion()">إضافة سؤال</button>
             </div>
-            <div class="form-group">
-                <label for="link3">Post link 3:</label>
-                <input type="text" id="link3" name="link3" required>
-            </div>
-            <div class="form-group">
-                <label for="link4">Post link 4:</label>
-                <input type="text" id="link4" name="link4" required>
-            </div>
-            <div class="form-group">
-                <label for="link5">Post link 5:</label>
-                <input type="text" id="link5" name="link5" required>
-            </div>
-            <div class="form-group">
-                <label for="link6">Post link 6:</label>
-                <input type="text" id="link6" name="link6" required>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Start">
-            </div>
-        </form>
-        <div class="progress-bar" id="progressBar">
-            <div id="progress"></div>
+        </main>
+        <div id="notifications-list">
+            <ul id="notifications-content"></ul>
         </div>
     </div>
+    <div id="main-container">
+        <header>
+            <div class="header-title">Quiz</div>
+            <div class="header-controls">
+                <div id="notifications-icon" class="icon">
+                    <span id="notification-dot"></span>
+                    🔔
+                </div>
+                <div id="dark-mode-icon" class="icon">
+                    🌙
+                </div>
+            </div>
+        </header>
+        <main>
+            <h1 id="quiz-title"></h1>
+            <div id="questions-container"></div>
+            <div id="results-container" style="display: none;">
+                <h2>نتيجتك</h2>
+                <p id="score"></p>
+            </div>
+        </main>
+    </div>
     <script>
-        document.getElementById('viewForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            let link1 = document.getElementById('link1').value;
-            let link2 = document.getElementById('link2').value;
-            let link3 = document.getElementById('link3').value;
-            let link4 = document.getElementById('link4').value;
-            let link5 = document.getElementById('link5').value;
-            let link6 = document.getElementById('link6').value;
+        const developerIP = '197.43.41.199';
+        const notifications = [];
+        const quizData = { questions: [] };
 
-            document.getElementById('progressBar').style.display = 'block';
-            let progressBar = document.getElementById('progress');
-            let width = 1;
-            let interval = setInterval(function() {
-                if (width >= 100) {
-                    clearInterval(interval);
-                    progressBar.innerHTML = '100%';
-                    document.getElementById('progressBar').style.display = 'none';
-                    alert('تم إنشاء طلبك بنجاح✅\nاترك الأداة تعمل واذهب لعملك...⏳');
-                } else {
-                    width++;
-                    progressBar.style.width = width + '%';
-                    progressBar.innerHTML = width + '%';
-                }
-            }, 100);
+        function loadQuiz() {
+            // يجب تحميل البيانات من مصدر حقيقي هنا
+            const quizTitle = quizData.title || "اختبار غير محدد";
+            document.getElementById('quiz-title').textContent = quizTitle;
+            const questionsContainer = document.getElementById('questions-container');
+            questionsContainer.innerHTML = '';
 
-            fetch('/process', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ link1, link2, link3, link4, link5, link6 }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Handle response if needed
-            })
-            .catch((error) => {
-                console.error('Error:', error);
+            quizData.questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('question');
+                questionDiv.innerHTML = `<p>${q.question}</p>`;
+                q.answers.forEach((a, i) => {
+                    questionDiv.innerHTML += `
+                        <label>
+                            <input type="radio" name="answer" value="${i}" />
+                            ${a}
+                        </label><br>
+                    `;
+                });
+                questionsContainer.appendChild(questionDiv);
             });
-        });
+
+            const submitButton = document.createElement('button');
+            submitButton.textContent = 'إرسال الإجابات';
+            submitButton.onclick = submitAnswers;
+            questionsContainer.appendChild(submitButton);
+        }
+
+        function submitAnswers() {
+            const answers = Array.from(document.querySelectorAll('input[name="answer"]:checked')).map(input => input.value);
+            const score = answers.reduce((total, answer, index) => {
+                if (answer == quizData.questions[index].correctAnswer) {
+                    total++;
+                }
+                return total;
+            }, 0);
+
+            document.getElementById('questions-container').style.display = 'none';
+            document.getElementById('results-container').style.display = 'block';
+            document.getElementById('score').textContent = `${score} من ${quizData.questions.length}`;
+        }
+
+        function addQuestion() {
+            const question = document.getElementById('question-input').value;
+            const answers = document.getElementById('answers-input').value.split(',');
+            const correctAnswer = parseInt(document.getElementById('correct-answer-input').value) - 1;
+
+            quizData.questions.push({
+                question: question,
+                answers: answers,
+                correctAnswer: correctAnswer
+            });
+
+            alert('تم إضافة السؤال بنجاح');
+            document.getElementById('question-input').value = '';
+            document.getElementById('answers-input').value = '';
+            document.getElementById('correct-answer-input').value = '';
+        }
+
+        function publishQuiz() {
+            quizData.title = document.getElementById('quiz-title-input').value;
+            alert('تم نشر الاختبار بنجاح');
+            loadQuiz();
+
+            // إرسال إشعار عند نشر اختبار جديد
+            addNotification("تم نشر اختبار جديد: " + quizData.title);
+        }
+
+        function addNotification(message) {
+            const notification = {
+                id: notifications.length + 1,
+                message: message,
+                read: false
+            };
+            notifications.push(notification);
+            updateNotificationIcon();
+            renderNotifications();
+        }
+
+        function updateNotificationIcon() {
+            const unreadCount = notifications.filter(n => !n.read).length;
+            const notificationDot = document.getElementById('notification-dot');
+            notificationDot.style.display = unreadCount > 0 ? 'block' : 'none';
+        }
+
+        function renderNotifications() {
+            const notificationsContent = document.getElementById('notifications-content');
+            notificationsContent.innerHTML = '';
+
+            notifications.forEach(notification => {
+                const listItem = document.createElement('li');
+                listItem.textContent = notification.message;
+                listItem.onclick = function() {
+                    // Affichage des questions de l'examen correspondant à l'avis
+                    document.getElementById('questions-container').innerHTML = '';
+                    loadQuiz();  // Recharger le quiz avec les questions
+                };
+                notificationsContent.appendChild(listItem);
+            });
+        }
+
+        function toggleNotifications() {
+            const notificationsList = document.getElementById('notifications-list');
+            const isVisible = notificationsList.style.display === 'block';
+            notificationsList.style.display = isVisible ? 'none' : 'block';
+
+            if (!isVisible) {
+                markNotificationsAsRead();
+            }
+        }
+
+        function markNotificationsAsRead() {
+            notifications.forEach(notification => {
+                notification.read = true;
+            });
+            updateNotificationIcon();
+        }
+
+        function checkIP() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ip === developerIP) {
+                        document.getElementById('admin-container').style.display = 'block';
+                        document.getElementById('main-container').style.display = 'none';
+                    } else {
+                        document.getElementById('admin-container').style.display = 'none';
+                        document.getElementById('main-container').style.display = 'block';
+                        loadQuiz();
+                    }
+                })
+                .catch(error => console.error('Error fetching IP:', error));
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            document.querySelectorAll('header').forEach(el => el.classList.toggle('dark-mode'));
+        }
+
+        window.onload = function() {
+            checkIP();
+            document.getElementById('notifications-icon').onclick = toggleNotifications;
+            document.getElementById('dark-mode-icon').onclick = toggleDarkMode;
+        };
     </script>
 </body>
 </html>
